@@ -1,0 +1,9 @@
+# Bazel #
+#########
+MODULE.bazel.lock
+bazel-*
+
+# Data #
+########
+data/KITTI
+
