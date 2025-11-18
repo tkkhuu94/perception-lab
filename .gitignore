@@ -2,8 +2,13 @@
 #########
 MODULE.bazel.lock
 bazel-*
+external
+.cache
 
 # Data #
 ########
 data/KITTI
 
+# IDE #
+#######
+compile_commands.json
