@@ -15,6 +15,8 @@ public:
   static std::unique_ptr<IDownSample<PointT>>
   Create(const IDownSampleParams &params);
 
+  std::string Type() const override { return "VoxelGrid"; };
+
   pcl::PointCloud<PointT>
   Apply(const pcl::PointCloud<PointT> &input_cloud) override;
 

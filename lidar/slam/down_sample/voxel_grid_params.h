@@ -7,7 +7,7 @@ namespace lidar {
 namespace slam {
 namespace down_sample {
 
-struct VoxelGridParams : IDownSampleParams {
+struct VoxelGridParams : public IDownSampleParams {
   float leaf_size_x;
   float leaf_size_y;
   float leaf_size_z;

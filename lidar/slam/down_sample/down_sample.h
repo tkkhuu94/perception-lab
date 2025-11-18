@@ -12,6 +12,7 @@ namespace down_sample {
 
 template <typename PointT> class IDownSample {
 public:
+  virtual std::string Type() const { return "IDownSample"; };
 
   virtual pcl::PointCloud<PointT>
   Apply(const pcl::PointCloud<PointT> &input_cloud) = 0;

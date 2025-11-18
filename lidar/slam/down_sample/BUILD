@@ -29,3 +29,14 @@ cc_library(
         "@pcl//:filters",
     ],
 )
+
+cc_library(
+    name = "lib_factory",
+    hdrs = ["factory.h"],
+    visibility = ["//lidar/slam/down_sample/tests:__subpackages__"],
+    deps = [
+        ":lib_down_sample",
+        ":lib_down_sample_params",
+        ":lib_voxel_grid",
+    ],
+)
