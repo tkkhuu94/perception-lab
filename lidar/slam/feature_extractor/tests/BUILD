@@ -8,3 +8,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "test_factory",
+    srcs = ["test_factory.cpp"],
+    deps = [
+        "//lidar/slam/feature_extractor:lib_factory",
+        "@googletest//:gtest_main",
+    ],
+)

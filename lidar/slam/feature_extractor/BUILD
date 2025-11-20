@@ -32,3 +32,14 @@ cc_library(
         "@pcl//:features",
     ],
 )
+
+cc_library(
+    name = "lib_factory",
+    hdrs = ["factory.h"],
+    visibility = ["//lidar/slam/feature_extractor/tests:__subpackages__"],
+    deps = [
+        ":lib_curvature_calculator",
+        ":lib_feature_extractor",
+        ":lib_feature_extractor_params",
+    ],
+)

@@ -18,9 +18,8 @@ namespace feature_extractor {
 template <typename PointT>
 class CurvatureCalculator : public IFeatureExtractor<PointT> {
 public:
-
   static std::unique_ptr<CurvatureCalculator<PointT>>
-  Create(const CurvatureCalculatorParams &params);
+  Create(const IFeatureExtractorParams &params);
 
   std::string Type() const override;
 
@@ -38,10 +37,11 @@ private:
 
 template <typename PointT>
 std::unique_ptr<CurvatureCalculator<PointT>>
-CurvatureCalculator<PointT>::Create(const CurvatureCalculatorParams &params) {
+CurvatureCalculator<PointT>::Create(const IFeatureExtractorParams &params) {
+
   auto calculator = std::unique_ptr<CurvatureCalculator<PointT>>(
       new CurvatureCalculator<PointT>());
-  calculator->params_ = params;
+  calculator->params_ = dynamic_cast<const CurvatureCalculatorParams &>(params);
   calculator->kd_tree_ = std::make_unique<KdTree>();
   calculator->normal_estimation_ = std::make_unique<NormalEstimation>();
   return calculator;
