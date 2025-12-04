@@ -5,4 +5,16 @@ bazel_dep(name = "wolfd_bazel_compile_commands", version = "0.5.2")
 bazel_dep(name = "eigen", version = "5.0.0")
 bazel_dep(name = "googletest", version = "1.17.0")
 bazel_dep(name = "pcl", version = "1.15.1")
+bazel_dep(name = "protobuf", version = "33.1")
 bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "rules_proto", version = "7.1.0")
+
+waymo_loader = use_repo_rule(
+    "//third_party/waymo_open_dataset:repo_loader.bzl",
+    "waymo_repository",
+)
+
+# Instantiate the repository so @waymo_open_dataset becomes available
+waymo_loader(
+    name = "waymo_open_dataset",
+)
