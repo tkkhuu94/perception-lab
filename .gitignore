@@ -7,7 +7,7 @@ external
 
 # Data #
 ########
-data/KITTI
+data/*
 
 # IDE #
 #######
