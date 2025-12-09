@@ -1,14 +1,5 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-
-cc_library(
-    name = "waymo_open_dataset_loader",
-    srcs = ["waymo_open_dataset_loader.cpp"],
-    hdrs = ["waymo_open_dataset_loader.h"],
-    deps = [
-        "@abseil-cpp//absl/status:statusor",
-        "@waymo_open_dataset//:waymo_open_dataset_cc_protos",
-    ],
-)
 
 cc_library(
     name = "lib_point_cloud_loader",
@@ -24,5 +15,10 @@ cc_library(
 cc_binary(
     name = "test_load_point_cloud",
     srcs = ["main.cpp"],
-    deps = [":lib_point_cloud_loader"],
+    deps = [
+        ":lib_point_cloud_loader",
+        "//data_loader/waymo:utility",
+        "//data_loader/waymo:waymo_open_dataset_loader",
+        "@pcl//:io",
+    ],
 )

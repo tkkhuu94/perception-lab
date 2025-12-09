@@ -1,10 +1,10 @@
-#include <filesystem>
 
 #include "absl/strings/str_format.h"
 
-#include "data_loader/waymo_open_dataset_loader.h"
+#include "data_loader/waymo/waymo_open_dataset_loader.h"
 
 namespace data_loader {
+namespace waymo {
 
 absl::Status
 WaymoOpenDatasetLoader::ReadTfRecord(const std::string &file_path) {
@@ -21,7 +21,8 @@ WaymoOpenDatasetLoader::ReadTfRecord(const std::string &file_path) {
   return absl::OkStatus();
 }
 
-absl::StatusOr<waymo::open_dataset::Frame> WaymoOpenDatasetLoader::NextFrame() {
+absl::StatusOr<::waymo::open_dataset::Frame>
+WaymoOpenDatasetLoader::NextFrame() {
   if (file_stream_ == nullptr) {
     return absl::UnavailableError(
         "Loader is not initialized with any TfRecord file");
@@ -65,7 +66,7 @@ absl::StatusOr<waymo::open_dataset::Frame> WaymoOpenDatasetLoader::NextFrame() {
                      sizeof(masked_crc_data));
 
   // Parse Proto
-  waymo::open_dataset::Frame frame;
+  ::waymo::open_dataset::Frame frame;
   if (!frame.ParseFromArray(buffer.data(), length)) {
     return absl::DataLossError("Failed to parse Frame proto");
   }
@@ -73,4 +74,5 @@ absl::StatusOr<waymo::open_dataset::Frame> WaymoOpenDatasetLoader::NextFrame() {
   return frame;
 }
 
+} // namespace waymo
 } // namespace data_loader

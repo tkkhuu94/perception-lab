@@ -7,18 +7,20 @@
 #include "waymo_open_dataset/dataset.pb.h"
 
 namespace data_loader {
+namespace waymo {
 class WaymoOpenDatasetLoader {
 public:
   WaymoOpenDatasetLoader() = default;
   ~WaymoOpenDatasetLoader() = default;
 
   absl::Status ReadTfRecord(const std::string &file_path);
-  absl::StatusOr<waymo::open_dataset::Frame> NextFrame();
+  absl::StatusOr<::waymo::open_dataset::Frame> NextFrame();
 
 private:
   std::unique_ptr<std::ifstream> file_stream_;
 };
 
+} // namespace waymo
 } // namespace data_loader
 
 #endif
