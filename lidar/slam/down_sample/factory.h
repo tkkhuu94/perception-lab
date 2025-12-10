@@ -19,8 +19,8 @@ enum class DownSampleType {
 class DownSampleFactory {
 public:
   template <typename PointT>
-  std::unique_ptr<IDownSample<PointT>> Create(const DownSampleType &type,
-                                              const IDownSampleParams &params);
+  static std::unique_ptr<IDownSample<PointT>>
+  Create(const DownSampleType &type, const IDownSampleParams &params);
 };
 
 template <typename PointT>
