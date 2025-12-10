@@ -21,10 +21,13 @@ cc_binary(
     srcs = ["slam.cpp"],
     defines = ["EIGEN_MAX_ALIGN_BYTES=32"],
     deps = [
-        "@abseil-cpp//absl/log",
         "//lidar/slam/down_sample:factory",
         "//lidar/slam/down_sample:voxel_grid",
         "//lidar/slam/down_sample:voxel_grid_params",
+        "//lidar/slam/feature_extractor:curvature_calculator",
+        "//lidar/slam/feature_extractor:curvature_calculator_params",
+        "//lidar/slam/feature_extractor:factory",
         "//lidar/slam/map",
+        "@abseil-cpp//absl/log",
     ],
 )
