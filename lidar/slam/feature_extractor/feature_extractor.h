@@ -14,6 +14,8 @@ template <typename PointT> class IFeatureExtractor {
 public:
   using FeatureCloud = pcl::PointCloud<PointT>;
 
+  virtual ~IFeatureExtractor() = default;
+
   virtual std::string Type() const { return "FeatureExtractor"; }
 
   virtual absl::StatusOr<FeatureCloud>

@@ -19,7 +19,7 @@ enum class FeatureType {
 class FeatureExtractorFactory {
 public:
   template <typename PointT>
-  std::unique_ptr<IFeatureExtractor<PointT>>
+  static std::unique_ptr<IFeatureExtractor<PointT>>
   Create(const FeatureType &type, const IFeatureExtractorParams &params);
 };
 

@@ -4,7 +4,7 @@ cc_test(
     name = "test_curvature_calculator",
     srcs = ["test_curvature_calculator.cpp"],
     deps = [
-        "//lidar/slam/feature_extractor:lib_curvature_calculator",
+        "//lidar/slam/feature_extractor:curvature_calculator",
         "@googletest//:gtest_main",
     ],
 )
@@ -13,7 +13,7 @@ cc_test(
     name = "test_factory",
     srcs = ["test_factory.cpp"],
     deps = [
-        "//lidar/slam/feature_extractor:lib_factory",
+        "//lidar/slam/feature_extractor:factory",
         "@googletest//:gtest_main",
     ],
 )
