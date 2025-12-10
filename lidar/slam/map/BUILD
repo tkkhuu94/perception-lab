@@ -7,6 +7,7 @@ cc_library(
     visibility = ["//lidar/slam:__subpackages__"],
     deps = [
         "//lidar/slam/down_sample",
+        "//lidar/slam/feature_extractor",
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/status:statusor",
         "@pcl//:common",
