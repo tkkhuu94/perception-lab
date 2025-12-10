@@ -15,3 +15,16 @@ cc_library(
         "@pcl//:registration",
     ],
 )
+
+cc_binary(
+    name = "slam",
+    srcs = ["slam.cpp"],
+    defines = ["EIGEN_MAX_ALIGN_BYTES=32"],
+    deps = [
+        "@abseil-cpp//absl/log",
+        "//lidar/slam/down_sample:factory",
+        "//lidar/slam/down_sample:voxel_grid",
+        "//lidar/slam/down_sample:voxel_grid_params",
+        "//lidar/slam/map",
+    ],
+)
