@@ -12,6 +12,8 @@ namespace down_sample {
 
 template <typename PointT> class IDownSample {
 public:
+  virtual ~IDownSample() = default;
+
   virtual std::string Type() const { return "IDownSample"; };
 
   virtual pcl::PointCloud<PointT>
