@@ -1,18 +1,21 @@
 #ifndef DATA_LOADER_POINT_CLOUD_LOADER_H_
 #define DATA_LOADER_POINT_CLOUD_LOADER_H_
 
-#include "absl/log/log.h"
-#include "absl/status/statusor.h"
-#include "absl/strings/str_cat.h"
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include "absl/log/log.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "pcl/point_cloud.h"
 
 namespace data_loader {
 namespace point_cloud_loader {
 
 template <typename PointT>
-absl::StatusOr<std::vector<PointT>> LoadFromFile(const std::string &file_path) {
+absl::StatusOr<std::shared_ptr<pcl::PointCloud<PointT>>>
+LoadFromFile(const std::string &file_path) {
   std::ifstream file(file_path, std::ios::binary);
 
   if (!file.is_open()) {
@@ -38,7 +41,6 @@ absl::StatusOr<std::vector<PointT>> LoadFromFile(const std::string &file_path) {
   int num_points = file_size / bytes_per_point;
 
   // --- 3. Resize cloud and read data ---
-  
 
   // Read all data at once into a buffer
   // This is much faster than reading point by point
@@ -47,17 +49,23 @@ absl::StatusOr<std::vector<PointT>> LoadFromFile(const std::string &file_path) {
   file.close();
 
   // --- 4. Copy data from buffer to PCL cloud ---
-  std::vector<PointT> points;
+  auto cloud = std::make_shared<pcl::PointCloud<PointT>>();
+  cloud->points.resize(num_points);
+
   for (int i = 0; i < num_points; ++i) {
     PointT p;
     p.x = buffer[i * num_floats_per_point + 0];
     p.y = buffer[i * num_floats_per_point + 1];
     p.z = buffer[i * num_floats_per_point + 2];
     p.intensity = buffer[i * num_floats_per_point + 3];
-    points.emplace_back(p);
+    cloud->points.push_back(p);
   }
 
-  return points;
+  cloud->width = cloud->points.size();
+  cloud->height = 1;
+  cloud->is_dense = true;
+
+  return cloud;
 }
 
 } // namespace point_cloud_loader

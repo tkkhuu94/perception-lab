@@ -18,11 +18,6 @@ cc_library(
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
+        "@pcl//:common",
     ],
-)
-
-cc_binary(
-    name = "test_load_point_cloud",
-    srcs = ["main.cpp"],
-    deps = [":lib_point_cloud_loader"],
 )
