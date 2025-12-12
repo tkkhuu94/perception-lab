@@ -17,6 +17,7 @@ cc_library(
 
 cc_library(
     name = "curvature_calculator_params",
+    srcs = ["curvature_calculator_params.cpp"],
     hdrs = ["curvature_calculator_params.h"],
     visibility = ["//lidar/slam:__subpackages__"],
     deps = [":feature_extractor_params"],

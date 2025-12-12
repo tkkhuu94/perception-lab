@@ -30,18 +30,25 @@ private:
   using NormalEstimation = pcl::NormalEstimation<PointT, pcl::PointNormal>;
   using KdTree = pcl::search::KdTree<PointT>;
 
+  CurvatureCalculator(const CurvatureCalculatorParams &params);
+
   CurvatureCalculatorParams params_;
   std::shared_ptr<KdTree> kd_tree_;
   std::shared_ptr<NormalEstimation> normal_estimation_;
 };
 
 template <typename PointT>
+CurvatureCalculator<PointT>::CurvatureCalculator(
+    const CurvatureCalculatorParams &params)
+    : params_(params) {}
+
+template <typename PointT>
 std::unique_ptr<CurvatureCalculator<PointT>>
 CurvatureCalculator<PointT>::Create(const IFeatureExtractorParams &params) {
 
   auto calculator = std::unique_ptr<CurvatureCalculator<PointT>>(
-      new CurvatureCalculator<PointT>());
-  calculator->params_ = dynamic_cast<const CurvatureCalculatorParams &>(params);
+      new CurvatureCalculator<PointT>(
+          dynamic_cast<const CurvatureCalculatorParams &>(params)));
   calculator->kd_tree_ = std::make_unique<KdTree>();
   calculator->normal_estimation_ = std::make_unique<NormalEstimation>();
   return calculator;
@@ -69,7 +76,7 @@ absl::StatusOr<pcl::PointCloud<PointT>> CurvatureCalculator<PointT>::Extract(
   kd_tree_->setInputCloud(input_cloud_ptr);
   normal_estimation_->setInputCloud(input_cloud_ptr);
   normal_estimation_->setSearchMethod(kd_tree_);
-  normal_estimation_->setRadiusSearch(params_.search_radius);
+  normal_estimation_->setRadiusSearch(params_.SearchRadius());
   normal_estimation_->compute(cloud_with_normals);
 
   if (input_cloud.points.size() != cloud_with_normals.points.size()) {
@@ -81,7 +88,7 @@ absl::StatusOr<pcl::PointCloud<PointT>> CurvatureCalculator<PointT>::Extract(
   for (size_t i = 0; i < cloud_with_normals.points.size(); ++i) {
     const auto &point_with_normal = cloud_with_normals.points[i];
 
-    if (point_with_normal.curvature > params_.curvature_threshold) {
+    if (point_with_normal.curvature > params_.CurvatureThreshold()) {
       feature_cloud.points.push_back(input_cloud.points[i]);
     }
   }

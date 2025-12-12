@@ -7,9 +7,17 @@ namespace lidar {
 namespace slam {
 namespace feature_extractor {
 
-struct CurvatureCalculatorParams : public IFeatureExtractorParams {
-  float curvature_threshold;
-  float search_radius;
+class CurvatureCalculatorParams : public IFeatureExtractorParams {
+
+public:
+  CurvatureCalculatorParams(float curvature_threshold, float search_radius);
+
+  float CurvatureThreshold() const;
+  float SearchRadius() const;
+
+private:
+  float curvature_threshold_;
+  float search_radius_;
 };
 
 } // namespace feature_extractor

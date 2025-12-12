@@ -3,9 +3,6 @@
 
 #include <string>
 
-#include "absl/status/statusor.h"
-#include "pcl/point_cloud.h"
-
 namespace lidar {
 namespace slam {
 namespace feature_extractor {
