@@ -1,6 +1,5 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "pcl/io/pcd_io.h"
 
