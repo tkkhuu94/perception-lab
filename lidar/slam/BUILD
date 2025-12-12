@@ -30,7 +30,10 @@ cc_binary(
         "//lidar/slam/feature_extractor:factory",
         "//lidar/slam/map",
         "//lidar/slam/matcher:factory",
+        "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/log:flags",
         "@bazel_tools//tools/cpp/runfiles",
+        "@pcl//:io",
     ],
 )
