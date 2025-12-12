@@ -2,6 +2,7 @@
 #define LIDAR_SLAM_MAP_MAP_H_
 
 #include "absl/status/statusor.h"
+#include "pcl/filters/statistical_outlier_removal.h"
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
 
@@ -27,6 +28,9 @@ public:
   absl::StatusOr<Eigen::Matrix4f>
   UpdateMap(pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud);
 
+  [[nodiscard]] const std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> &
+  PointCloudMap() const;
+
 private:
   Map(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
       std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor,
@@ -35,6 +39,7 @@ private:
   std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler_;
   std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor_;
   std::unique_ptr<IMatcher<pcl::PointXYZI>> matcher_;
+  pcl::StatisticalOutlierRemoval<pcl::PointXYZI> outlier_filter_;
 
   std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> map_;
 

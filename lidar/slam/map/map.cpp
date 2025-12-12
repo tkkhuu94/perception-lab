@@ -1,5 +1,7 @@
 #include "lidar/slam/map/map.h"
 
+#include "pcl/common/transforms.h"
+
 namespace lidar {
 namespace slam {
 namespace map {
@@ -32,24 +34,43 @@ Map::UpdateMap(pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud) {
   }
 
   auto processed_cloud = down_sampler_->Apply(*raw_cloud);
-  auto feature_cloud = feature_extractor_->Extract(processed_cloud);
+
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud =
+      std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
+  outlier_filter_.setInputCloud(processed_cloud.makeShared());
+  outlier_filter_.filter(*filtered_cloud);
+
+  auto feature_cloud = feature_extractor_->Extract(*filtered_cloud);
 
   if (!feature_cloud.ok()) {
     return feature_cloud.status();
   }
 
   if (prev_feature_cloud_ != nullptr) {
-    auto transform = matcher_->CalculateTransform(prev_feature_cloud_,
-                                                  feature_cloud->makeShared());
+    auto transform = matcher_->CalculateTransform(feature_cloud->makeShared(),
+                                                  prev_feature_cloud_);
     if (!transform.ok()) {
       return transform.status();
     }
 
     global_pose_ = global_pose_ * transform.value();
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_cloud(
+        new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::transformPointCloud(*filtered_cloud, *transformed_cloud, global_pose_);
+
+    *map_ += *transformed_cloud;
+  } else {
+    map_ = feature_cloud->makeShared();
   }
 
   prev_feature_cloud_ = feature_cloud->makeShared();
   return global_pose_;
+}
+
+const std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> &
+Map::PointCloudMap() const {
+  return map_;
 }
 
 Map::Map(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
@@ -59,7 +80,10 @@ Map::Map(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
       feature_extractor_(std::move(feature_extractor)),
       matcher_(std::move(matcher)),
       map_(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>()),
-      global_pose_(Eigen::Matrix4f::Identity()) {}
+      global_pose_(Eigen::Matrix4f::Identity()) {
+  outlier_filter_.setMeanK(50);
+  outlier_filter_.setStddevMulThresh(0.8);
+}
 
 } // namespace map
 } // namespace slam
