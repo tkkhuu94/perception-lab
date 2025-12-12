@@ -28,11 +28,15 @@ public:
   UpdateMap(pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud);
 
 private:
-  Map() = default;
+  Map(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
+      std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor,
+      std::unique_ptr<IMatcher<pcl::PointXYZI>> matcher);
 
   std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler_;
   std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor_;
   std::unique_ptr<IMatcher<pcl::PointXYZI>> matcher_;
+
+  std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> map_;
 
   std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> prev_feature_cloud_;
 

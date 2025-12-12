@@ -20,14 +20,9 @@ absl::StatusOr<std::unique_ptr<Map>> Map::Create(
     return absl::InvalidArgumentError("matcher is null");
   }
 
-  std::unique_ptr<Map> map(new Map());
-
-  map->down_sampler_ = std::move(down_sampler);
-  map->feature_extractor_ = std::move(feature_extractor);
-  map->matcher_ = std::move(matcher);
-  map->global_pose_ = Eigen::Matrix4f::Identity();
-
-  return map;
+  return std::unique_ptr<Map>(new Map(std::move(down_sampler),
+                                      std::move(feature_extractor),
+                                      std::move(matcher)));
 }
 
 absl::StatusOr<Eigen::Matrix4f>
@@ -56,6 +51,15 @@ Map::UpdateMap(pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud) {
   prev_feature_cloud_ = feature_cloud->makeShared();
   return global_pose_;
 }
+
+Map::Map(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
+         std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor,
+         std::unique_ptr<IMatcher<pcl::PointXYZI>> matcher)
+    : down_sampler_(std::move(down_sampler)),
+      feature_extractor_(std::move(feature_extractor)),
+      matcher_(std::move(matcher)),
+      map_(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>()),
+      global_pose_(Eigen::Matrix4f::Identity()) {}
 
 } // namespace map
 } // namespace slam
