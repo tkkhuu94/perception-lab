@@ -4,8 +4,10 @@ namespace lidar {
 namespace slam {
 namespace map {
 
-absl::StatusOr<std::unique_ptr<Map>>
-Map::Create(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler, std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor) {
+absl::StatusOr<std::unique_ptr<Map>> Map::Create(
+    std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler,
+    std::unique_ptr<IFeatureExtractor<pcl::PointXYZI>> feature_extractor,
+    std::unique_ptr<IMatcher<pcl::PointXYZI>> matcher) {
   if (down_sampler == nullptr) {
     return absl::InvalidArgumentError("down_sampler is null");
   }
@@ -14,12 +16,45 @@ Map::Create(std::unique_ptr<IDownSample<pcl::PointXYZI>> down_sampler, std::uniq
     return absl::InvalidArgumentError("feature_extractor is null");
   }
 
+  if (matcher == nullptr) {
+    return absl::InvalidArgumentError("matcher is null");
+  }
+
   std::unique_ptr<Map> map(new Map());
 
   map->down_sampler_ = std::move(down_sampler);
   map->feature_extractor_ = std::move(feature_extractor);
+  map->matcher_ = std::move(matcher);
+  map->global_pose_ = Eigen::Matrix4f::Identity();
 
   return map;
+}
+
+absl::StatusOr<Eigen::Matrix4f>
+Map::UpdateMap(pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud) {
+  if (raw_cloud == nullptr) {
+    return absl::InvalidArgumentError("raw_cloud is null");
+  }
+
+  auto processed_cloud = down_sampler_->Apply(*raw_cloud);
+  auto feature_cloud = feature_extractor_->Extract(processed_cloud);
+
+  if (!feature_cloud.ok()) {
+    return feature_cloud.status();
+  }
+
+  if (prev_feature_cloud_ != nullptr) {
+    auto transform = matcher_->CalculateTransform(prev_feature_cloud_,
+                                                  feature_cloud->makeShared());
+    if (!transform.ok()) {
+      return transform.status();
+    }
+
+    global_pose_ = global_pose_ * transform.value();
+  }
+
+  prev_feature_cloud_ = feature_cloud->makeShared();
+  return global_pose_;
 }
 
 } // namespace map

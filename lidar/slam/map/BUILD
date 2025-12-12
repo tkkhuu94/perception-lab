@@ -8,6 +8,7 @@ cc_library(
     deps = [
         "//lidar/slam/down_sample",
         "//lidar/slam/feature_extractor",
+        "//lidar/slam/matcher",
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/status:statusor",
         "@pcl//:common",
