@@ -12,6 +12,7 @@
 #include "lidar/slam/feature_extractor/factory.h"
 #include "lidar/slam/map/map.h"
 #include "lidar/slam/matcher/factory.h"
+#include "lidar/slam/noise_remover/factory.h"
 
 using namespace lidar::slam;
 
@@ -49,7 +50,8 @@ LoadKITTIBinFiles(const std::string &data_root) {
 
 ABSL_FLAG(std::string, velodyne_data_root, "",
           "Path to the velodyne data containing the .bin files.");
-ABSL_FLAG(size_t, max_frames, 20, "Max number of frames to process.");
+ABSL_FLAG(size_t, max_frames, std::numeric_limits<size_t>::max(),
+          "Max number of frames to process.");
 
 int main(int argc, char **argv) {
   absl::ParseCommandLine(argc, argv);
@@ -65,6 +67,10 @@ int main(int argc, char **argv) {
       down_sample::DownSampleType::kVoxelGrid,
       down_sample::VoxelGridParams(0.1, 0.1, 0.1));
 
+  auto noise_remover = noise_remover::Factory::Create<pcl::PointXYZI>(
+      noise_remover::Type::kStatisticalOutlierRemover,
+      noise_remover::StatisticalOutlierRemoverParams(50, 0.8));
+
   auto feature_extractor =
       feature_extractor::FeatureExtractorFactory::Create<pcl::PointXYZI>(
           feature_extractor::FeatureType::kCurvature,
@@ -73,7 +79,7 @@ int main(int argc, char **argv) {
   auto matcher = matcher::MatcherFactory::Create<pcl::PointXYZI>(
       matcher::MatcherType::kIcp, matcher::IcpParams(0.5, 50, 1e-8));
 
-  auto map = map::Map::Create(std::move(down_sampler),
+  auto map = map::Map::Create(std::move(down_sampler), std::move(noise_remover),
                               std::move(feature_extractor), std::move(matcher));
   if (!map.ok()) {
     LOG(ERROR) << map.status();

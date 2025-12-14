@@ -10,9 +10,9 @@ cc_library(
         "//lidar/slam/down_sample",
         "//lidar/slam/feature_extractor",
         "//lidar/slam/matcher",
+        "//lidar/slam/noise_remover",
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/status:statusor",
         "@pcl//:common",
-        "@pcl//:filters",
     ],
 )
