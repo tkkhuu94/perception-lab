@@ -55,6 +55,8 @@ LoadCameraCalibration(const std::string &file_path) {
     } else if (values.size() == 9) {
       // Rotation Matrix (R_rect) -> 3x3
       mat = cv::Mat(values, true).reshape(1, 3);
+    } else if (values.size() == 3) {
+      mat = cv::Mat(values, true).reshape(1, 1).t();
     } else {
       // Skip unrecognized line formats or store as flat vector if preferred
       continue;
