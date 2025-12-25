@@ -10,6 +10,10 @@ cc_library(
 cc_library(
     name = "feature_extractor",
     hdrs = ["feature_extractor.h"],
+    deps = [
+        "@abseil-cpp//absl/status:statusor",
+        "@opencv",
+    ],
 )
 
 cc_library(

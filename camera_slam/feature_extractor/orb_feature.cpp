@@ -17,5 +17,14 @@ std::unique_ptr<OrbFeature> OrbFeature::Create(const OrbFeatureParams &params) {
   return orb_feature;
 }
 
+absl::StatusOr<Features> OrbFeature::Extract(const cv::Mat &image) {
+
+  Features features;
+  orb_->detectAndCompute(image, cv::noArray(), features.keypoints,
+                        features.descriptors);
+
+  return features;
+}
+
 } // namespace feature_extractor
 } // namespace camera_slam

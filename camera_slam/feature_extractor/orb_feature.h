@@ -17,6 +17,8 @@ public:
 
   std::string Type() const override;
 
+  absl::StatusOr<Features> Extract(const cv::Mat &image) override;
+
 private:
   cv::Ptr<cv::ORB> orb_;
 };
