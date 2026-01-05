@@ -5,6 +5,8 @@ cc_binary(
     srcs = ["camera_slam.cpp"],
     deps = [
         "//camera_slam/camera:stereo_camera",
+        "//camera_slam/feature_extractor:factory",
+        "//camera_slam/visual_odometry:visual_odometry",
         "//data_loader/kitti:data_loader",
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/status:statusor",

@@ -1,24 +1,29 @@
 #include "camera_slam/visual_odometry/visual_odometry.h"
 
 #include "opencv2/calib3d.hpp"
+#include "visual_odometry.h"
 
 namespace camera_slam {
 namespace visual_odometry {
 
 absl::StatusOr<std::unique_ptr<VisualOdometry>> VisualOdometry::Create(
+    std::unique_ptr<camera::StereoCamera> stereo_camera,
     const feature_extractor::IFeatureExtractorParams &feature_extractor_params,
     const feature_extractor::ExtractorType &feature_extractor_type) {
-  auto vo = std::unique_ptr<VisualOdometry>();
+  auto vo = std::unique_ptr<VisualOdometry>(new VisualOdometry());
 
   auto extractor = feature_extractor::Factory::Create(feature_extractor_type,
                                                       feature_extractor_params);
   if (extractor == nullptr) {
     return absl::InternalError("Failed to create feature extractor");
   }
+
+  vo->stereo_camera_ = std::move(stereo_camera);
   vo->extractor_ = std::move(extractor);
 
   return vo;
 }
+
 
 absl::StatusOr<std::vector<cv::Point3f>> VisualOdometry::ComputeStereoDepth(
     const feature_extractor::Features &left_features,
@@ -155,8 +160,8 @@ absl::Status VisualOdometry::Update(const cv::Mat &left_image,
   // Solve PnP: Finds Pose of 'object_points' relative to 'curr_camera'
   // We use RANSAC to reject outliers (bad matches)
   cv::solvePnPRansac(object_points, image_points,
-                     stereo_camera_->LeftCamera()->IntrinsicMatrix(), cv::noArray(),
-                     rvec, tvec);
+                     stereo_camera_->LeftCamera()->IntrinsicMatrix(),
+                     cv::noArray(), rvec, tvec);
   cv::Rodrigues(rvec, R);
 
   // Invert logic: We want Camera Motion in World Frame
@@ -171,19 +176,10 @@ absl::Status VisualOdometry::Update(const cv::Mat &left_image,
   return absl::OkStatus();
 }
 
+VisualOdometry::VisualOdometry() {
+  rotation_ = cv::Mat::eye(3, 3, CV_64F);
+  translation_ = cv::Mat::zeros(3, 1, CV_64F);
+}
+
 } // namespace visual_odometry
 } // namespace camera_slam
-
-int main(int argc, char **argv) {
-
-  auto extractor_params = feature_extractor::OrbFeatureParams(
-      500 /* n_features */, 8 /* n_levels */, 31 /* edge_threshold */,
-      0 /* first_level */, 2 /* wta_k */, 31 /* patch_size */,
-      20 /* fast_threshold */, 1.2f /* scale_factor */,
-      cv::ORB::HARRIS_SCORE /* score_type */);
-
-  auto extractor = feature_extractor::Factory::Create(
-      feature_extractor::ExtractorType::kOrb, extractor_params);
-
-  return 0;
-}

@@ -22,13 +22,20 @@ struct FeaturesWithDepth {
 class VisualOdometry {
 public:
   static absl::StatusOr<std::unique_ptr<VisualOdometry>>
-  Create(const feature_extractor::IFeatureExtractorParams
+  Create(std::unique_ptr<camera::StereoCamera> stereo_camera,
+         const feature_extractor::IFeatureExtractorParams
              &feature_extractor_params,
          const feature_extractor::ExtractorType &feature_extractor_type);
 
   absl::Status Update(const cv::Mat &left_image, const cv::Mat &right_image);
 
+  [[nodiscard]] const cv::Mat &Translation() const { return translation_; }
+
+  [[nodiscard]] const cv::Mat &Rotation() const { return rotation_; }
+
 private:
+  VisualOdometry();
+
   absl::StatusOr<std::vector<cv::Point3f>>
   ComputeStereoDepth(const feature_extractor::Features &left_features,
                      const feature_extractor::Features &right_features) const;
@@ -38,7 +45,7 @@ private:
 
   std::unique_ptr<FeaturesWithDepth> previous_features_;
 
-  cv::Mat rotation_ = cv::Mat::eye(3, 3, CV_64F);   // Final Rotation (World)
+  cv::Mat rotation_ = cv::Mat::eye(3, 3, CV_64F);      // Final Rotation (World)
   cv::Mat translation_ = cv::Mat::zeros(3, 1, CV_64F); // Final Position (World)
 };
 

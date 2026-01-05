@@ -13,6 +13,9 @@ namespace kitti {
 absl::StatusOr<std::unordered_map<std::string, cv::Mat>>
 LoadCameraCalibration(const std::string &file_path);
 
+absl::StatusOr<std::vector<std::string>>
+LoadImagePaths(const std::string &directory);
+
 } // namespace kitti
 } // namespace data_loader
 

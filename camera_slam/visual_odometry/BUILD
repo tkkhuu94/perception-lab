@@ -1,5 +1,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
+package(default_visibility = ["//camera_slam:__subpackages__"])
+
 cc_library(
     name = "visual_odometry",
     srcs = ["visual_odometry.cpp"],

@@ -1,7 +1,10 @@
 #include "absl/log/log.h"
 #include "absl/strings/str_format.h"
+#include "opencv2/imgcodecs.hpp"
 
 #include "camera_slam/camera/stereo_camera.h"
+#include "camera_slam/feature_extractor/factory.h"
+#include "camera_slam/visual_odometry/visual_odometry.h"
 #include "data_loader/kitti/data_loader.h"
 
 absl::StatusOr<std::string> GetKITTIDataPath(const std::string &sequence_name) {
@@ -55,11 +58,13 @@ float CalculateBaseLine(const cv::Mat &left_camera_projection_matrix,
                         left_camera_projection_matrix.at<double>(0, 0);
   const float right_tx = right_camera_projection_matrix.at<double>(0, 3) /
                          right_camera_projection_matrix.at<double>(0, 0);
-    LOG(INFO) << "Left tx: " << left_tx;
-    LOG(INFO) << "Right tx: " << right_tx;
+  LOG(INFO) << "Left tx: " << left_tx;
+  LOG(INFO) << "Right tx: " << right_tx;
 
   return std::fabs(left_tx - right_tx);
 }
+
+using camera_slam::visual_odometry::VisualOdometry;
 
 int main(int argc, char **argv) {
 
@@ -71,6 +76,8 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  LOG(INFO) << "Dataset: " << *kitti_dataset;
+
   auto camera_calibration = data_loader::kitti::LoadCameraCalibration(
       absl::StrFormat("%s/%s", kitti_dataset.value(), "calib_cam_to_cam.txt"));
 
@@ -78,6 +85,27 @@ int main(int argc, char **argv) {
     LOG(ERROR) << camera_calibration.status();
     return 1;
   }
+
+  auto left_png_files = data_loader::kitti::LoadImagePaths(
+      absl::StrFormat("%s/%s", kitti_dataset.value(), "image_02/data"));
+  auto right_png_files = data_loader::kitti::LoadImagePaths(
+      absl::StrFormat("%s/%s", kitti_dataset.value(), "image_03/data"));
+  if (!left_png_files.ok()) {
+    LOG(ERROR) << left_png_files.status();
+    return 1;
+  }
+  if (!right_png_files.ok()) {
+    LOG(ERROR) << right_png_files.status();
+    return 1;
+  }
+  if (left_png_files->size() != right_png_files->size()) {
+    LOG(ERROR) << "Number of left and right images do not match";
+    return 1;
+  }
+
+  LOG(INFO) << absl::StrFormat(
+      "Loaded %d files for left images and %d files for right images",
+      left_png_files->size(), right_png_files->size());
 
   cv::Mat left_camera_extrinsic;
   cv::Mat right_camera_extrinsic;
@@ -104,6 +132,36 @@ int main(int argc, char **argv) {
   LOG(INFO) << "Right camera projection matrix: \n"
             << (*stereo_camera)->RightCamera()->ProjectionMatrix();
   LOG(INFO) << "Stereo Camera Baseline: " << (*stereo_camera)->BaseLine();
+
+  auto extractor_params = feature_extractor::OrbFeatureParams(
+      500 /* n_features */, 8 /* n_levels */, 31 /* edge_threshold */,
+      0 /* first_level */, 2 /* wta_k */, 31 /* patch_size */,
+      20 /* fast_threshold */, 1.2f /* scale_factor */,
+      cv::ORB::HARRIS_SCORE /* score_type */);
+
+  auto vo = VisualOdometry::Create(std::move(*stereo_camera), extractor_params,
+                                   feature_extractor::ExtractorType::kOrb);
+  if (!vo.ok()) {
+    LOG(ERROR) << vo.status();
+    return 1;
+  }
+
+  LOG(INFO) << "Visual Odometry initialized!";
+
+  for (size_t i = 0; i < left_png_files->size(); ++i) {
+    cv::Mat left_image = cv::imread(left_png_files->at(i), cv::IMREAD_GRAYSCALE);
+    cv::Mat right_image = cv::imread(right_png_files->at(i), cv::IMREAD_GRAYSCALE);
+
+    auto update_status =(*vo)->Update(left_image, right_image);
+    if (!update_status.ok()) {
+      LOG(ERROR) << update_status;
+      return 1;
+    }
+
+    LOG(INFO) << "Rotation\n" << (*vo)->Rotation();
+    LOG(INFO) << "Translation\n" << (*vo)->Translation();
+    LOG(INFO) << "===========";
+  }
 
   return 0;
 }

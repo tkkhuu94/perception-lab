@@ -69,5 +69,37 @@ LoadCameraCalibration(const std::string &file_path) {
   return matrices;
 }
 
+absl::StatusOr<std::vector<std::string>>
+LoadImagePaths(const std::string &directory) {
+  if (!std::filesystem::is_directory(directory)) {
+    return absl::NotFoundError(
+        absl::StrFormat("Directory does not exist: %s", directory));
+  }
+
+  std::vector<std::string> png_files;
+
+  try {
+
+    for (const auto &entry : std::filesystem::directory_iterator(directory)) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+
+      if (entry.path().extension() != ".png") {
+        continue;
+      }
+
+      png_files.emplace_back(entry.path().string());
+    }
+  } catch (const std::filesystem::filesystem_error &e) {
+    return absl::InternalError(
+        absl::StrFormat("Failed to iterate through .png files: %s", e.what()));
+  }
+
+  std::sort(png_files.begin(), png_files.end());
+
+  return png_files;
+}
+
 } // namespace kitti
 } // namespace data_loader
